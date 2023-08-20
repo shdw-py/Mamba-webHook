@@ -28,20 +28,6 @@ export default defineComponent({
     const hash = "#";
     const apiBaseUrl = await this.data.get('API_BASE_URL'); // accessing api_base_url secret key
 
-    // Logs the event body response
-    console.log(`
-    
-    • Novo evento detectado •\n
-
-    - Nome completo: ${clientName}
-    - CPF: ${CPF}
-    - Status do pagamento: ${paymentStatus}\n
-    • Response body do evento • :
-    ##########################################
-    `, webhookEventData,
-      "\n##########################################");
-
-
 
     // order and track code generator
     class Gerador {
@@ -50,7 +36,7 @@ export default defineComponent({
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1) + min);
       }
-  
+
       geradorDePedido(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
@@ -60,13 +46,12 @@ export default defineComponent({
 
     let gerador = new Gerador();
 
-    const codigoAleatorio = gerador.geradorDeCodigo({ min: 100000000000, max: 999999999999 }) + prefix;
-    const pedidoAleatorio = hash + gerador.geradorDePedido({ min: 10000000, max: 99999999 });
-
+    const codigoAleatorio = gerador.geradorDeCodigo(100000000000, 999999999999) + prefix;
+    const pedidoAleatorio = hash + gerador.geradorDePedido(10000000, 99999999);
 
 
     // create new random order
-    async function gerarRastreio() {
+    async function createNewOrder() {
       try {
         // send post http request to create endpoint
         const url = `${apiBaseUrl}/create`
@@ -93,23 +78,58 @@ export default defineComponent({
     }
 
     // check whether it was an PIX or card transaction
-    pixData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`);
-    cardData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`);
-
-
 
 
 
     // check payment status
-    
-    if (paymentStatus === "refused") {
-      console.log(`• Status: Compra recusada.`)
-    } else if (paymentStatus === "waiting_payment") {
-      console.log(`• Status: Pagamento pendente...`)
+    try {
+      if (paymentStatus === "refused") {
+        console.log(`• Status: Compra recusada.`)
+        return;
+      } 
+
+      else if (paymentStatus === "waiting_payment") {
+        console.log(`• Status: Pagamento pendente...`);
+
+        pixData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`);
+        cardData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`);
+
+        // Logs the event body response
+        console.log(`• Pagamento Pendente •\n
+
+        - Nome completo: ${clientName}
+        - CPF: ${CPF}
+        - Status do pagamento: ${paymentStatus}\n
+        • Response body do evento • :
+        ##########################################
+        `, webhookEventData,
+          "\n##########################################"
+        );
+      }
+
+      else {
+        console.log(`• Status: Compra aprovada!`);
+
+        pixData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`);
+        cardData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`);
+
+        // Logs the event body response
+        console.log(`• Novo evento detectado •\n
+
+        - Nome completo: ${clientName}
+        - CPF: ${CPF}
+        - Status do pagamento: ${paymentStatus}\n
+        • Response body do evento • :
+        ##########################################
+        `, webhookEventData,
+          "\n##########################################"
+        );
+
+        await createNewOrder();
+      }
     }
-    else {
-      console.log(`• Status: Compra aprovada!`);
-      gerarRastreio();
+    catch (err) {
+      console.error("An error occurred:", err)
     }
 
 
