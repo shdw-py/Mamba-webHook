@@ -21,6 +21,7 @@ export default defineComponent({
     // Payment details
     const pixData = webhookEventData.data.pix;
     const cardData = webhookEventData.data.card;
+    const paymentMethod = webhookEventData.data.paymentMethod; // credit_card || pix
     const paymentStatus = webhookEventData.data.status; // waiting_payment | refused
 
     // gerador
@@ -56,9 +57,18 @@ export default defineComponent({
         // send post http request to create endpoint
         const url = `${apiBaseUrl}/create`
 
+        // date
+        const currentDate = new Date();
+        const dia = currentDate.getDate();
+        const mes = currentDate.getMonth() + 1;
+        const ano = currentDate.getFullYear();
+        
+
         const requestBody = {
           "trackCode": codigoAleatorio,
           "orderId": pedidoAleatorio,
+          "registrationDate": `${ano}-${mes}-${dia}T01:00:00.000+00:00`,
+          "CPF": CPF,
           "followUp": [
             {
               "step1": true,
@@ -91,8 +101,7 @@ export default defineComponent({
       else if (paymentStatus === "waiting_payment") {
         console.log(`• Status: Pagamento pendente...`);
 
-        pixData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`);
-        cardData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`);
+        paymentMethod === "pix" ? console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`) : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`)
 
         // Logs the event body response
         console.log(`• Pagamento Pendente •\n
@@ -100,18 +109,17 @@ export default defineComponent({
         - Nome completo: ${clientName}
         - CPF: ${CPF}
         - Status do pagamento: ${paymentStatus}\n
-        • Response body do evento • :
-        ##########################################
+        • Body response do evento • :
+        ####################
         `, webhookEventData,
-          "\n##########################################"
+          "\n####################"
         );
       }
 
       else {
         console.log(`• Status: Compra aprovada!`);
 
-        pixData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`);
-        cardData === null ? null : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`);
+        paymentMethod === "pix" ? console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo PIX.`) : console.log(`• Pagamento ${clientFirstName}: Pedido feito pelo cartao.`)
 
         // Logs the event body response
         console.log(`• Novo evento detectado •\n
@@ -120,9 +128,9 @@ export default defineComponent({
         - CPF: ${CPF}
         - Status do pagamento: ${paymentStatus}\n
         • Response body do evento • :
-        ##########################################
+        ####################
         `, webhookEventData,
-          "\n##########################################"
+          "\n####################"
         );
 
         await createNewOrder();
