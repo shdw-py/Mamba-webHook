@@ -19,8 +19,6 @@ export default defineComponent({
     const CPF = webhookEventData.data.customer.document.number
 
     // Payment details
-    const pixData = webhookEventData.data.pix;
-    const cardData = webhookEventData.data.card;
     const paymentMethod = webhookEventData.data.paymentMethod; // credit_card || pix
     const paymentStatus = webhookEventData.data.status; // waiting_payment | refused
 
