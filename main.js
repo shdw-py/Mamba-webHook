@@ -51,24 +51,20 @@ export default defineComponent({
     const pedidoAleatorio = hash + gerador.geradorDePedido(10000000, 99999999);
 
 
+
+
     // create new random order
     async function createNewOrder() {
       try {
         // send post http request to create endpoint
         const url = `${apiBaseUrl}/create`
 
-        // date
-        const currentDate = new Date();
-        const dia = currentDate.getDate();
-        const mes = currentDate.getMonth() + 1;
-        const ano = currentDate.getFullYear();
-        
 
         const requestBody = {
           "trackCode": codigoAleatorio,
           "orderId": pedidoAleatorio,
-          "registrationDate": `${ano}-${mes}-${dia}T01:00:00.000+00:00`,
-          "CPF": CPF,
+          "Cpf": CPF,
+          "clientName": clientName,
           "followUp": [
             {
               "step1": true,
